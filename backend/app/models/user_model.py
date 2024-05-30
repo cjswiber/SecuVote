@@ -1,14 +1,24 @@
-from uuid import UUID
+import datetime
+from enum import Enum
+from uuid import UUID, uuid4
 from beanie import Document, Indexed
 from pydantic import Field, EmailStr
 
+
+class UserRole(Enum):
+    ADMIN = "admin"
+    TABLE_AUTHORITY = "table authority"
+    CANDIDATE = "candidate"
+    CITIZEN = "citizen"
+
+
 class User(Document):
     user_id: UUID = Field(default_factory=uuid4)
-    # dni: str = Indexed(str, unique=True)
-    email: Indexed(EmailStr, unique=True)
-    first_name: str = Indexed(str)
-    last_name: str = Indexed(str)
-    role: str
+    dni: int = Indexed(int, unique=True)
+    email: str = Indexed(EmailStr, unique=True)
+    last_name: str
+    first_name: str
+    role: UserRole
     disabled : bool
 
 
@@ -34,5 +44,11 @@ class User(Document):
     async def by_email(self, email: str) -> "User":
         return await self.find_one(self.email == email)
     
-    class Collection:
-        name = "users"
+    @classmethod
+    async def by_dni(self, dni: int) -> "User":
+        return await self.find_one(self.dni == dni)
+    
+
+    class Settings:
+        collection = "users"
+

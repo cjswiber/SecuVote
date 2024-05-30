@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     ACCES_TOKEN_EXPIRE: int = 15
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7    # 7 days
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    PROJECT_NAME: str = "secuvote"
+    PROJECT_NAME: str = "SECUVOTE"
 
     # Database
     MONGO_CONNECTION_STRING: str = config("MONGO_CONNECTION_STRING", cast=str)

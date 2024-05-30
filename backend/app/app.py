@@ -1,17 +1,15 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from app.core.config import settings
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
-)
+from app.models.user_model import User
 
 
-@app.on_event("startup")
-async def app_init():
+@asynccontextmanager
+# @app.on_event("startup")
+async def lifespan(app: FastAPI):
     '''
         initialize crucial app services
     '''
@@ -21,9 +19,18 @@ async def app_init():
     await init_beanie(
         database=db_client,
         document_models = [
-        
+            User
         ]
     )
+
+    yield
+
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
+
 
 
 '''
