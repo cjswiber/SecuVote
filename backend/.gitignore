@@ -2,3 +2,4 @@
 .venv/Lib
 .idea
 db.sqlite3
+boot.sh
