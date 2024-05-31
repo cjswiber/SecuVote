@@ -1,3 +1,4 @@
+from typing import Optional
 import datetime
 from enum import Enum
 from uuid import UUID, uuid4
@@ -16,10 +17,11 @@ class User(Document):
     user_id: UUID = Field(default_factory=uuid4)
     dni: int = Indexed(int, unique=True)
     email: str = Indexed(EmailStr, unique=True)
-    last_name: str
-    first_name: str
-    role: UserRole
-    disabled : bool
+    hashed_password: str
+    last_name: Optional[str] = None
+    first_name: Optional[str] = None
+    role: Optional[UserRole] = None
+    disabled : Optional[bool] = None
 
 
     def __repr__(self) -> str:
@@ -50,5 +52,5 @@ class User(Document):
     
 
     class Settings:
-        collection = "users"
+        name = "users"
 
