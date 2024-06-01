@@ -10,7 +10,7 @@ class UserRole(Enum):
     ADMIN = "admin"
     TABLE_AUTHORITY = "table authority"
     CANDIDATE = "candidate"
-    CITIZEN = "citizen"
+    # CITIZEN = "citizen"
 
 
 class User(Document):

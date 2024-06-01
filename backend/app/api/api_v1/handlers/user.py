@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from app.schemas.user_schema import UserAuth
 from app.services.user_service import UserService
-import pymongo
+from pymongo import MongoClient, errors
 
 user_router = APIRouter()
 
@@ -10,6 +10,8 @@ user_router = APIRouter()
 async def create_user(data: UserAuth):
     try:
         await UserService.create_user(data)
-    except pymongo.errors.DuplicateKeyError:
+    except errors.DuplicateKeyError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already registered")
+
+
 
