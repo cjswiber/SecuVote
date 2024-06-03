@@ -1,7 +1,8 @@
 from app.schemas.user_schema import UserAuth
 from app.models.user_model import User
-from app.core.security import get_password
+from app.core.security import get_password, verify_password
 from fastapi import HTTPException, status
+from typing import Optional
 
 
 class UserService:
@@ -35,3 +36,20 @@ class UserService:
                 detail=str(e)
             )
 
+
+    @staticmethod
+    async def authenticate(dni: int, password: str) -> Optional[User]:
+        user = await UserService.get_user_by_dni(dni=dni)
+        if not user:
+            return None
+        if not verify_password(password=password, hashed_pass=user.hashed_password):
+            return None
+        
+        return user
+    
+
+    @staticmethod
+    async def get_user_by_dni(dni: int) -> Optional[User]:
+        user = await User.find_one(User.dni == dni)
+        return user
+    
