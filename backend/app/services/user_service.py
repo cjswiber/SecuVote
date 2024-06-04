@@ -3,6 +3,7 @@ from app.models.user_model import User
 from app.core.security import get_password, verify_password
 from fastapi import HTTPException, status
 from typing import Optional
+from uuid import UUID
 
 
 class UserService:
@@ -52,4 +53,10 @@ class UserService:
     async def get_user_by_dni(dni: int) -> Optional[User]:
         user = await User.find_one(User.dni == dni)
         return user
-    
+   
+
+    @staticmethod
+    async def get_user_by_id(id: UUID) -> Optional[User]:
+        user = await User.find_one(User.user_id == id)
+        return user 
+
