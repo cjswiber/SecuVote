@@ -37,10 +37,6 @@ class User(Document):
         if isinstance(other, User):
             return self.email == other.email
         return False
-
-    @property
-    def create(self) -> datetime:
-        return self.id.generation_time
     
     @classmethod
     async def by_email(self, email: str) -> "User":
@@ -53,4 +49,10 @@ class User(Document):
 
     class Settings:
         name = "users"
+
+'''
+    @property
+    def create(self) -> datetime:
+        return self.id.generation_time
+'''
 

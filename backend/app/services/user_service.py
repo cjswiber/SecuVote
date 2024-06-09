@@ -1,9 +1,10 @@
-from app.schemas.user_schema import UserAuth
+from app.schemas.user_schema import UserAuth, UserUpdate
 from app.models.user_model import User
 from app.core.security import get_password, verify_password
 from fastapi import HTTPException, status
 from typing import Optional
 from uuid import UUID
+from bson import ObjectId
 
 
 class UserService:
@@ -60,3 +61,15 @@ class UserService:
         user = await User.find_one(User.user_id == id)
         return user 
 
+
+    @staticmethod
+    async def update_user(id: ObjectId, data: UserUpdate) -> User:
+        user = await User.find_one(User.user_id == id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        update_data = {k: v for k, v in data if v is not None}
+        await user.update({"$set": update_data})
+        return user
+    
+    
