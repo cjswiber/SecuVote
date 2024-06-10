@@ -10,10 +10,10 @@ class UserRole(Enum):
     ADMIN = "admin"
     TABLE_AUTHORITY = "table authority"
     CANDIDATE = "candidate"
-    # CITIZEN = "citizen"
+    CITIZEN = "citizen"
 
 
-class User(Document):
+class UserModel(Document):
     user_id: UUID = Field(default_factory=uuid4)
     dni: Indexed(int, unique=True) # type: ignore
     email: Indexed(EmailStr, unique=True) # type: ignore
@@ -34,21 +34,22 @@ class User(Document):
         return hash(self.email)
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, User):
+        if isinstance(other, UserModel):
             return self.email == other.email
         return False
     
     @classmethod
-    async def by_email(self, email: str) -> "User":
+    async def by_email(self, email: str) -> "UserModel":
         return await self.find_one(self.email == email)
     
     @classmethod
-    async def by_dni(self, dni: int) -> "User":
+    async def by_dni(self, dni: int) -> "UserModel":
         return await self.find_one(self.dni == dni)
     
 
     class Settings:
         name = "users"
+
 
 '''
     @property

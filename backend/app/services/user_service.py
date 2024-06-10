@@ -1,24 +1,26 @@
 from app.schemas.user_schema import UserAuth, UserUpdate
-from app.models.user_model import User
+from app.models.user_model import UserModel
 from app.core.security import get_password, verify_password
 from fastapi import HTTPException, status
 from typing import Optional
 from uuid import UUID
 from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
+
 
 
 class UserService:
     @staticmethod
-    async def create_user(user: UserAuth) -> User:
+    async def create_user(user: UserAuth) -> UserModel:
         try:
-            existing_user = await User.find_one(User.dni==user.dni)
+            existing_user = await UserModel.find_one(UserModel.dni==user.dni)
             if existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="User already registered"
                 )
 
-            user_in = User(
+            user_in = UserModel(
                 dni=user.dni,
                 email=user.email,
                 hashed_password=get_password(user.password),
@@ -40,36 +42,38 @@ class UserService:
 
 
     @staticmethod
-    async def authenticate(dni: int, password: str) -> Optional[User]:
+    async def authenticate(dni: int, password: str) -> Optional[UserModel]:
         user = await UserService.get_user_by_dni(dni=dni)
         if not user:
-            return None
+            raise HTTPException(status_code=404, detail="User not found")
         if not verify_password(password=password, hashed_pass=user.hashed_password):
-            return None
+            raise HTTPException(status_code=400, detail="Password does not match")
         
         return user
     
 
     @staticmethod
-    async def get_user_by_dni(dni: int) -> Optional[User]:
-        user = await User.find_one(User.dni == dni)
+    async def get_user_by_dni(dni: int) -> Optional[UserModel]:
+        user = await UserModel.find_one(UserModel.dni == dni)
         return user
    
 
     @staticmethod
-    async def get_user_by_id(id: UUID) -> Optional[User]:
-        user = await User.find_one(User.user_id == id)
+    async def get_user_by_id(id: UUID) -> Optional[UserModel]:
+        user = await UserModel.find_one(UserModel.user_id == id)
         return user 
 
 
     @staticmethod
-    async def update_user(id: ObjectId, data: UserUpdate) -> User:
-        user = await User.find_one(User.user_id == id)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        
-        update_data = {k: v for k, v in data if v is not None}
-        await user.update({"$set": update_data})
-        return user
-    
-    
+    async def update_user(id: ObjectId, data: UserUpdate) -> UserModel:
+        try:    
+            user = await UserModel.find_one(UserModel.user_id == id)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            
+            update_data = {k: v for k, v in data if v is not None}
+            await user.update({"$set": update_data})
+            return user
+        except DuplicateKeyError:
+            raise HTTPException(status_code=400, detail="Email already in use")
+

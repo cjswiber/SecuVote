@@ -1,7 +1,7 @@
 from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
 from fastapi import Depends, HTTPException, status
-from app.models.user_model import User
+from app.models.user_model import UserModel
 from jose import jwt
 from app.schemas.auth_schema import TokenPayload
 from app.services.user_service import UserService
@@ -15,7 +15,7 @@ reusable_oauth = OAuth2PasswordBearer(
 )
 
 
-async def get_current_user(token: str = Depends(reusable_oauth)) -> User:
+async def get_current_user(token: str = Depends(reusable_oauth)) -> UserModel:
     try:
         payload = jwt.decode(
             token,
@@ -43,7 +43,7 @@ async def get_current_user(token: str = Depends(reusable_oauth)) -> User:
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            detail="UserModel not found",
         )
     
     return user

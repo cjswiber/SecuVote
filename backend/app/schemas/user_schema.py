@@ -9,6 +9,12 @@ class UserAuth(BaseModel):
     password: str = Field(..., min_length=5, max_length=50, description="Password of the user")
 
 
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+    
 class UserOut(BaseModel):
     user_id: UUID
     dni: int
@@ -17,10 +23,3 @@ class UserOut(BaseModel):
     last_name: Optional[str]
     disabled: Optional[bool] = False
 
-
-class UserUpdate(BaseModel):
-    email: Optional[EmailStr] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-
-    

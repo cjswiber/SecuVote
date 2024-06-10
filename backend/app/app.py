@@ -4,7 +4,9 @@ from app.core.config import settings
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app.models.user_model import User
+from app.models.user_model import UserModel
+from app.models.election_model import ElectionModel
+from app.models.candidate_model import CandidateModel
 from app.api.api_v1.router import router
 
 
@@ -23,7 +25,9 @@ async def lifespan(app: FastAPI):
     await init_beanie(
         database=db,
         document_models = [
-            User
+            UserModel,
+            ElectionModel,
+            CandidateModel
         ]
     )
     print("Connected to MongoDB successfully.")
@@ -39,6 +43,4 @@ app = FastAPI(
 
 
 app.include_router(router, prefix=settings.API_V1_STR)
-
-
 
