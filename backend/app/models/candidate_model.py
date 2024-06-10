@@ -9,7 +9,7 @@ class CandidateModel(Document):
     name: str
     party: str
     bio: Optional[str] = None
-    election: Optional[Link["ElectionModel"]]= None # Reference to the ID of the election
+    election: Optional[Link["ElectionModel"]] = None # Reference to the ID of the election
 
     def __repr__(self) -> str:
         return f"<Candidate {self.name}>"
