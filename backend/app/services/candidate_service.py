@@ -1,4 +1,4 @@
-from app.schemas.candidate_schema import CandidateCreate, CandidateUpdate
+from app.schemas.candidate_schema import CandidateCreate, CandidateUpdate, CandidateOut
 from app.models.candidate_model import CandidateModel
 from app.models.election_model import ElectionModel
 from fastapi import HTTPException, status
@@ -7,50 +7,31 @@ from uuid import UUID
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 from beanie import Link
+import json
 
 
 class CandidateService:
     @staticmethod
-    async def create_candidate(candidate: CandidateCreate) -> CandidateModel:
+    async def create_candidate(data: CandidateCreate) -> CandidateModel:
+        candidate = CandidateModel(
+            name=data.name,
+            party=data.party,
+            bio=data.bio,
+        )
         try:
-            '''
-            election = await ElectionModel.get(candidate.election_id)
-            election = await ElectionModel.get(ObjectId(candidate.election_id))
-            election = await ElectionModel.find_one(ElectionModel.id == candidate.election_id) 
-            if not election:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Election not found"
-                )
-            
-
-            elections = []
-            if candidate.election_id:
-                for election_id in candidate.election_id:
-                    election = await ElectionModel.find_one(ElectionModel.id == election_id)
-                    if not election:
-                        raise HTTPException(
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f"Election with id {election_id} not found"
-                        )
-                    elections.append(Link(ElectionModel, election.id))            
-            '''
-            existing_candidate = await CandidateModel.find_one(CandidateModel.name == candidate.name)
-            if existing_candidate:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Candidate already registered"
-                )
-            
-            candidate_in = CandidateModel(
+            await candidate.insert()
+            return CandidateModel(
+                candidate_id=candidate.candidate_id,
                 name=candidate.name,
                 party=candidate.party,
                 bio=candidate.bio,
-                # election=candidate.elections
+                election_id=[]
             )
-            await candidate_in.save()
-            return candidate_in
-
+        except DuplicateKeyError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Candidate already registered"
+            )
         except HTTPException as http_exc:
             # Re-raise HTTPException to avoid capturing it as a 500 error
             raise http_exc
@@ -63,30 +44,46 @@ class CandidateService:
 
 
     @staticmethod
-    async def get_candidate_by_id(id: UUID) -> Optional[CandidateModel]:
-        candidate = await CandidateModel.get(id)
+    async def get_candidate_by_id(candidate_id: UUID) -> Optional[CandidateOut]:
+        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
         if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate not found")
-        return candidate
+            return None
+
+        return CandidateOut(
+            candidate_id=candidate.candidate_id,
+            name=candidate.name,
+            party=candidate.party,
+            bio=candidate.bio,
+            election_id=candidate.elections
+        )
 
 
     @staticmethod
-    async def update_candidate(id: UUID, data: CandidateUpdate) -> CandidateModel:
-        try:
-            candidate = await CandidateModel.get(id)
-            if not candidate:
-                raise HTTPException(status_code=404, detail="Candidate not found")
+    async def update_candidate(candidate_id: UUID, data: CandidateUpdate) -> CandidateOut:
+        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+        if not candidate:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Candidate not found"
+            )
 
-            update_data = {k: v for k, v in data if v is not None}
-            await candidate.update({"$set": update_data})
-            return candidate
-        except DuplicateKeyError:
-            raise HTTPException(status_code=400, detail="Duplicate key error")
+        update_data = json.loads(data.json(exclude_unset=True))
+        for key, value in update_data.items():
+            setattr(candidate, key, value)
+        await candidate.save()
+
+        return CandidateOut(
+            candidate_id=candidate.candidate_id,
+            name=candidate.name,
+            party=candidate.party,
+            bio=candidate.bio,
+            election_id=candidate.elections
+        )
 
 
     @staticmethod
-    async def delete_candidate(id: UUID) -> None:
-        candidate = await CandidateModel.get(id)
+    async def delete_candidate(candidate_id: UUID) -> None:
+        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
         await candidate.delete()
