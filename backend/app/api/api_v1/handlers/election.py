@@ -4,7 +4,6 @@ from app.services.election_service import ElectionService
 from app.models.election_model import ElectionModel
 from pymongo import errors
 from uuid import UUID
-from beanie import PydanticObjectId
 
 
 election_router = APIRouter()
@@ -13,40 +12,23 @@ election_router = APIRouter()
 @election_router.post("/create", summary="Create a new election", response_model=ElectionOut)
 async def create_election(data: ElectionCreate):
     try:
-        election = await ElectionService.create_election(data)
-        return ElectionOut(
-            election_id=str(election.election_id),  # Transform to string
-            name=election.name,
-            description=election.description,
-            start_date=election.start_date,
-            end_date=election.end_date,
-            candidates=election.candidates
-        )
-    except Exception as e:
+        return await ElectionService.create_election(data)
+    except errors.DuplicateKeyError:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Election already registered"
         )
 
 
 @election_router.get("/{election_id}", summary="Get election details", response_model=ElectionOut)
-async def get_election(election_id: str):
-    try:
-        election = await ElectionService.get_election_by_id(PydanticObjectId(election_id))
-        return ElectionOut(
-            election_id=str(election.election_id),   # Transform to string
-            name=election.name,
-            description=election.description,
-            start_date=election.start_date,
-            end_date=election.end_date,
-            candidates=election.candidates
-        )
-    except Exception as e:
+async def get_election(election_id: UUID):
+    election = await ElectionService.get_election_by_id(election_id)
+    if not election:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Election not found"
         )
-
+    return election
 
 
 @election_router.post("/update/{election_id}", summary="Update Election", response_model=ElectionOut)
