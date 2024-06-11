@@ -82,6 +82,54 @@ class CandidateService:
 
 
     @staticmethod
+    async def add_election_to_candidate(candidate_id: UUID, election_id: UUID) -> CandidateModel:
+        try:
+            candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+            if not candidate:
+                raise HTTPException(status_code=404, detail="Candidate not found")
+
+            election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
+            if not election:
+                raise HTTPException(status_code=404, detail="Election not found")
+
+            if not hasattr(candidate, 'elections') or candidate.elections is None:
+                candidate.elections = [election]
+            else:
+                candidate.elections = candidate.elections + [election] 
+
+            await candidate.save()
+            return candidate
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(e)
+            )
+    
+    @staticmethod
+    async def remove_election_from_candidate(candidate_id: UUID, election_id: UUID):
+        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+        if not candidate:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Candidate not found"
+            )
+
+        if candidate.elections and candidate.elections.id == election_id:
+            candidate.elections = None
+            await candidate.save()
+
+        return CandidateOut(
+            candidate_id=candidate.candidate_id,
+            name=candidate.name,
+            party=candidate.party,
+            bio=candidate.bio,
+            election_id=candidate.elections
+        )
+
+
+
+    @staticmethod
     async def delete_candidate(candidate_id: UUID) -> None:
         candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
         if not candidate:

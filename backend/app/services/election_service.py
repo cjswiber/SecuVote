@@ -1,34 +1,37 @@
-from app.schemas.election_schema import ElectionCreate, ElectionUpdate
+from app.schemas.election_schema import ElectionCreate, ElectionUpdate, ElectionOut
 from app.models.election_model import ElectionModel
 from app.models.candidate_model import CandidateModel
 from fastapi import HTTPException, status
 from typing import Optional, List
 from uuid import UUID
 from pymongo.errors import DuplicateKeyError
+import json
 
 
 class ElectionService:
     @staticmethod
-    async def create_election(election: ElectionCreate) -> ElectionModel:
-        try:
-            # Check if an election with the same name already exists
-            existing_election = await ElectionModel.find_one(ElectionModel.name == election.name)
-            if existing_election:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Election already exists"
-                )
+    async def create_election(data: ElectionCreate) -> ElectionModel:
+        election = ElectionModel(
+            name=data.name,
+            description=data.description,
+            start_date=data.start_date,
+            end_date=data.end_date
+        )       
 
-            election_in = ElectionModel(
-                name=election.name,
+        try:
+            await election.insert()
+            return ElectionModel(
+                election_id=election.election_id,
                 description=election.description,
                 start_date=election.start_date,
                 end_date=election.end_date,
-                candidates=election.candidates
+                candidates=[]
             )
-            await election_in.save()
-            return election_in
-
+        except DuplicateKeyError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Election already registered"
+            )
         except HTTPException as http_exc:
             raise http_exc
 
@@ -40,25 +43,41 @@ class ElectionService:
 
 
     @staticmethod
-    async def get_election_by_id(election_id: UUID) -> Optional[ElectionModel]:
+    async def get_election_by_id(election_id: UUID) -> Optional[ElectionOut]:
         election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
         if not election:
-            raise HTTPException(status_code=404, detail="Election not found")
-        return election
+            return None
+
+        return ElectionOut(
+            election_id=election.id,
+            description=election.description,
+            start_date=election.start_date,
+            end_date=election.end_date,
+            candidates=election.candidates
+        )
 
 
     @staticmethod
-    async def update_election(election_id: UUID, data: ElectionUpdate) -> ElectionModel:
-        try:
-            election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
-            if not election:
-                raise HTTPException(status_code=404, detail="Election not found")
-            update_data = {k: v for k, v in data if v is not None}
-            await election.update({"$set": update_data})
-            return election
+    async def update_election(election_id: UUID, data: ElectionUpdate) -> ElectionOut:
+        election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
+        if not election:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Candidate not found"
+            )
 
-        except DuplicateKeyError:
-            raise HTTPException(status_code=400, detail="Duplicate data error")
+        update_data = json.loads(data.json(exclude_unset=True))
+        for key, value in update_data.items():
+            setattr(election, key, value)
+        await election.save()
+
+        return ElectionOut(
+            election_id=election.id,
+            description=election.description,
+            start_date=election.start_date,
+            end_date=election.end_date,
+            candidates=election.candidates
+        )
 
 
     @staticmethod
@@ -104,17 +123,12 @@ class ElectionService:
                 detail=str(e)
             )
 
+
     @staticmethod
     async def delete_election(election_id: UUID) -> None:
-        try:
-            election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
-            if not election:
-                raise HTTPException(status_code=404, detail="Election not found")
-            await election.delete()
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=str(e)
-            )
-        
+        election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
+        if not election:
+            raise HTTPException(status_code=404, detail="Election not found")
+        await election.delete()
+     
         

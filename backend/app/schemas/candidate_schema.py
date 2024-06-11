@@ -1,7 +1,6 @@
 from pydantic import BaseModel, UUID4, EmailStr, Field
 from typing import Optional, List
 from uuid import UUID
-from beanie import Link
 from app.models.election_model import ElectionModel
 
 

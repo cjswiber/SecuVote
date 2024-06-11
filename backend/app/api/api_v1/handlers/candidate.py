@@ -53,3 +53,33 @@ async def delete_candidate(candidate_id: UUID):
             detail="Candidate does not exist"
         )
 
+@candidate_router.post("/add-election-to-candidate/{candidate_id}/{election_id}", summary="Add Election to Candidate", response_model=CandidateOut)
+async def add_election_to_candidate(candidate_id: UUID, election_id: UUID):
+    try:
+        return await CandidateService.add_election_to_candidate(candidate_id, election_id)
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.detail
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while adding the election to the candidate"
+        )
+
+
+@candidate_router.delete("/remove-election-from-candidate/{candidate_id}/{election_id}", summary="Remove Election from Candidate", response_model=CandidateOut)
+async def remove_election_from_candidate(candidate_id: UUID, election_id: UUID):
+    try:
+        return await CandidateService.remove_election_from_candidate(candidate_id, election_id)
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.detail
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while removing the election from the candidate"
+        )

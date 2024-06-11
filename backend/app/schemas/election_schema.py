@@ -1,9 +1,7 @@
 from pydantic import BaseModel, Field
 from uuid import UUID
-from typing import Optional, List
+from typing import Optional
 import datetime as dt
-from app.models.candidate_model import CandidateModel
-from beanie import Link
 
 
 class ElectionCreate(BaseModel):
@@ -14,18 +12,16 @@ class ElectionCreate(BaseModel):
 
 
 class ElectionUpdate(BaseModel):
-    name: Optional[str] = Field(None, description="Name of the election")
-    description: Optional[str] = Field(None, description="Description of the election")
-    start_date: Optional[dt.datetime] = Field(None, description="Start date of the election")
-    end_date: Optional[dt.datetime] = Field(None, description="End date of the election")
-
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[dt.datetime] = None
+    end_date: Optional[dt.datetime] = None
 
 
 class ElectionOut(BaseModel):
     election_id: UUID
     name: str
-    description: Optional[str]
+    description: str
     start_date: dt.datetime
     end_date: dt.datetime
-
 

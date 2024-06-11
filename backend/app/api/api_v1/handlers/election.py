@@ -54,7 +54,7 @@ async def delete_election(election_id: UUID):
         )
 
 
-@election_router.post("/add_candidate_in_election/{election_id}/{candidate_id}", summary="Add Candidate to Election", response_model=ElectionOut)
+@election_router.post("/add-candidate-in-election/{election_id}/{candidate_id}", summary="Add Candidate to Election", response_model=ElectionOut)
 async def add_candidate_to_election(election_id: UUID, candidate_id: UUID):
     try:
         return await ElectionService.add_candidate_to_election(election_id, candidate_id)
@@ -67,7 +67,7 @@ async def add_candidate_to_election(election_id: UUID, candidate_id: UUID):
         )
 
 
-@election_router.delete("/remove_candidate_in_election/{election_id}/{candidate_id}", summary="Remove Candidate from Election")
+@election_router.delete("/remove-candidate-in-election/{election_id}/{candidate_id}", summary="Remove Candidate from Election")
 async def remove_candidate_from_election(election_id: UUID, candidate_id: UUID):
     try:
         await ElectionService.remove_candidate_from_election(election_id, candidate_id)
