@@ -6,53 +6,40 @@ from typing import Optional
 from uuid import UUID
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
-from beanie import Link
+from beanie import Link, PydanticObjectId
 
 
 class CandidateService:
     @staticmethod
     async def create_candidate(candidate: CandidateCreate) -> CandidateModel:
         try:
-            '''
-            election = await ElectionModel.get(candidate.election_id)
-            election = await ElectionModel.get(ObjectId(candidate.election_id))
-            election = await ElectionModel.find_one(ElectionModel.id == candidate.election_id) 
-            if not election:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Election not found"
-                )
-            
-
-            elections = []
-            if candidate.election_id:
-                for election_id in candidate.election_id:
-                    election = await ElectionModel.find_one(ElectionModel.id == election_id)
-                    if not election:
-                        raise HTTPException(
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f"Election with id {election_id} not found"
-                        )
-                    elections.append(Link(ElectionModel, election.id))            
-            '''
             existing_candidate = await CandidateModel.find_one(CandidateModel.name == candidate.name)
             if existing_candidate:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Candidate already registered"
                 )
-            
+
             candidate_in = CandidateModel(
                 name=candidate.name,
                 party=candidate.party,
                 bio=candidate.bio,
-                # election=candidate.elections
+                elections=candidate.elections
             )
+
+            # Guardar el candidato
             await candidate_in.save()
+
+            # Actualizar cada elección con el nuevo candidato
+            for election_id in candidate.elections:
+                election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
+                if election:
+                    election.candidates.append(candidate_in.candidate_id)
+                    await election.save()
+
             return candidate_in
 
         except HTTPException as http_exc:
-            # Re-raise HTTPException to avoid capturing it as a 500 error
             raise http_exc
 
         except Exception as e:
@@ -63,7 +50,7 @@ class CandidateService:
 
 
     @staticmethod
-    async def get_candidate_by_id(id: UUID) -> Optional[CandidateModel]:
+    async def get_candidate_by_id(id: PydanticObjectId) -> Optional[CandidateModel]:
         candidate = await CandidateModel.get(id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")

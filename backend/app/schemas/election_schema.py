@@ -3,7 +3,7 @@ from uuid import UUID
 from typing import Optional, List
 import datetime as dt
 from app.models.candidate_model import CandidateModel
-from beanie import Link
+from beanie import Link, PydanticObjectId
 
 
 class ElectionCreate(BaseModel):
@@ -14,7 +14,6 @@ class ElectionCreate(BaseModel):
     candidates: Optional[list[Link[CandidateModel]]] = None
     
 
-
 class ElectionUpdate(BaseModel):
     name: Optional[str] = Field(None, description="Name of the election")
     description: Optional[str] = Field(None, description="Description of the election")
@@ -23,13 +22,11 @@ class ElectionUpdate(BaseModel):
     candidates: Optional[List[Link[CandidateModel]]] = Field(None, description="List of candidates participating in the election")
 
 
-
 class ElectionOut(BaseModel):
-    election_id: UUID
+    election_id: str  # Cambiado a str para manejar la conversión de ObjectId
     name: str
     description: Optional[str]
     start_date: dt.datetime
     end_date: dt.datetime
-    candidates: Optional[List[CandidateModel]]
-
+    candidates: Optional[List[PydanticObjectId]]
 
