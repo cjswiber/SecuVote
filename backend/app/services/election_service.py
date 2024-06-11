@@ -5,13 +5,21 @@ from fastapi import HTTPException, status
 from typing import Optional, List
 from uuid import UUID
 from pymongo.errors import DuplicateKeyError
+from beanie import Link, PydanticObjectId
 
 
 class ElectionService:
     @staticmethod
+    async def get_election_by_id(election_id: PydanticObjectId) -> Optional[ElectionModel]:
+        election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
+        if not election:
+            raise HTTPException(status_code=404, detail="Election not found")
+        return election
+
+
+    @staticmethod
     async def create_election(election: ElectionCreate) -> ElectionModel:
         try:
-            # Check if an election with the same name already exists
             existing_election = await ElectionModel.find_one(ElectionModel.name == election.name)
             if existing_election:
                 raise HTTPException(
@@ -40,14 +48,6 @@ class ElectionService:
 
 
     @staticmethod
-    async def get_election_by_id(election_id: UUID) -> Optional[ElectionModel]:
-        election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
-        if not election:
-            raise HTTPException(status_code=404, detail="Election not found")
-        return election
-
-
-    @staticmethod
     async def update_election(election_id: UUID, data: ElectionUpdate) -> ElectionModel:
         try:
             election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
@@ -72,8 +72,15 @@ class ElectionService:
             if not candidate:
                 raise HTTPException(status_code=404, detail="Candidate not found")
 
-            election.candidates.append(candidate)
-            await election.save()
+            if candidate_id not in election.candidates:
+                election.candidates.append(candidate_id)
+                await election.save()
+                
+                # Add the election to the candidate's list of elections
+                if election_id not in candidate.elections:
+                    candidate.elections.append(election_id)
+                    await candidate.save()
+                    
             return election
 
         except Exception as e:
@@ -89,13 +96,17 @@ class ElectionService:
             election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
             if not election:
                 raise HTTPException(status_code=404, detail="Election not found")
-            await election.delete()
-            candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
-            if not candidate:
-                raise HTTPException(status_code=404, detail="Candidate not found")
 
-            election.candidates = [c for c in election.candidates if c != candidate_id]
-            await election.save()
+            if candidate_id in election.candidates:
+                election.candidates = [c for c in election.candidates if c != candidate_id]
+                await election.save()
+
+                # Remove the election from the candidate's list of elections
+                candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+                if candidate and election_id in candidate.elections:
+                    candidate.elections = [e for e in candidate.elections if e != election_id]
+                    await candidate.save()
+                    
             return election
 
         except Exception as e:
@@ -103,6 +114,7 @@ class ElectionService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=str(e)
             )
+
 
     @staticmethod
     async def delete_election(election_id: UUID) -> None:
