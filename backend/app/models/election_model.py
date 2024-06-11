@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 from beanie import Document, Link
 from pydantic import Field
 import datetime as dt
-from typing import Optional
+from typing import Optional, List
 
 
 class ElectionModel(Document):
@@ -11,7 +11,7 @@ class ElectionModel(Document):
     description: Optional[str] = None
     start_date: Optional[dt.datetime] = None
     end_date: Optional[dt.datetime] = None
-    candidates: Optional[Link["CandidateModel"]] = None
+    candidates: Optional[List[Link["CandidateModel"]]] = None
 
 
     def __repr__(self) -> str:

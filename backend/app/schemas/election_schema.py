@@ -1,8 +1,7 @@
 from pydantic import BaseModel, Field
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 import datetime as dt
-from typing import List
 from app.models.candidate_model import CandidateModel
 from beanie import Link
 

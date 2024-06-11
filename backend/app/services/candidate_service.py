@@ -6,6 +6,7 @@ from typing import Optional
 from uuid import UUID
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
+from beanie import Link
 
 
 class CandidateService:
@@ -21,8 +22,19 @@ class CandidateService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Election not found"
                 )
-            '''
             
+
+            elections = []
+            if candidate.election_id:
+                for election_id in candidate.election_id:
+                    election = await ElectionModel.find_one(ElectionModel.id == election_id)
+                    if not election:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Election with id {election_id} not found"
+                        )
+                    elections.append(Link(ElectionModel, election.id))            
+            '''
             existing_candidate = await CandidateModel.find_one(CandidateModel.name == candidate.name)
             if existing_candidate:
                 raise HTTPException(
@@ -34,7 +46,7 @@ class CandidateService:
                 name=candidate.name,
                 party=candidate.party,
                 bio=candidate.bio,
-                election=candidate.election_id
+                # election=candidate.elections
             )
             await candidate_in.save()
             return candidate_in
