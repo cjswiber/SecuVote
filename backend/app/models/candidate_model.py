@@ -1,7 +1,5 @@
 from typing import Optional, List
-from uuid import UUID, uuid4
 from beanie import Document, Indexed, Link
-from pydantic import Field
 
 
 class CandidateModel(Document):

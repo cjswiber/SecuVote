@@ -4,6 +4,7 @@ from app.models.candidate_model import CandidateModel
 from fastapi import HTTPException, status
 from typing import Optional, List
 from uuid import UUID
+from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 import json
 
@@ -46,7 +47,8 @@ class ElectionService:
 
     @staticmethod
     async def get_election_by_id(id: str) -> Optional[ElectionOut]:
-        election = await ElectionModel.find_one(ElectionModel.id == id)
+        object_id = ObjectId(id)
+        election = await ElectionModel.find_one(ElectionModel.id == object_id)
         if not election:
             return None
 

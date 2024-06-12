@@ -4,6 +4,7 @@ from app.models.election_model import ElectionModel
 from fastapi import HTTPException, status
 from typing import Optional
 from uuid import UUID
+from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 from beanie import Link
 import json
@@ -19,12 +20,13 @@ class CandidateService:
         )
         try:
             await candidate.insert()
-            return CandidateModel(
+            candidate_out = CandidateModel(
                 id=str(candidate.id),
                 name=candidate.name,
                 party=candidate.party,
                 bio=candidate.bio,
             )
+            return candidate_out
         except DuplicateKeyError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -42,13 +44,14 @@ class CandidateService:
 
 
     @staticmethod
-    async def get_candidate_by_id(candidate_id: UUID) -> Optional[CandidateOut]:
-        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+    async def get_candidate_by_id(id: str) -> Optional[CandidateOut]:
+        object_id = ObjectId(id)
+        candidate = await CandidateModel.find_one(CandidateModel.id == object_id)
         if not candidate:
             return None
 
         return CandidateOut(
-            candidate_id=candidate.candidate_id,
+            id=str(candidate.id),
             name=candidate.name,
             party=candidate.party,
             bio=candidate.bio,

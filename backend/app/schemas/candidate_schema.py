@@ -11,7 +11,7 @@ class CandidateCreate(BaseModel):
 
 
 class CandidateOut(BaseModel):
-    candidate_id: str
+    id: str
     name: str
     party: str
     bio: str

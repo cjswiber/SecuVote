@@ -1,6 +1,4 @@
-from uuid import UUID, uuid4
 from beanie import Document, Link, Indexed
-from pydantic import Field
 import datetime as dt
 from typing import Optional, List
 
