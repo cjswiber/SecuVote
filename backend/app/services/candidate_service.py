@@ -105,10 +105,12 @@ class CandidateService:
             if not election:
                 raise HTTPException(status_code=404, detail="Election not found")
 
-            if not hasattr(candidate, 'elections') or candidate.elections is None:
-                candidate.elections = [str(election.id)]
+            if not hasattr(candidate, 'elections') or candidate.elections is None and candidate.elections.id != election_id:
+                election.id = str(election.id)
+                candidate.elections = [election]
             else:
-                candidate.elections = candidate.elections + [str(election.id)] 
+                election.id = str(election.id)
+                candidate.elections.append(election)
 
             await candidate.save()
             return candidate

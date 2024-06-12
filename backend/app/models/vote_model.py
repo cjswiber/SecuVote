@@ -9,7 +9,7 @@ from app.models.election_model import ElectionModel
 
 
 class Vote(Document):
-    vote_id: UUID = Field(default_factory=uuid4)
+    # vote_id: UUID = Field(default_factory=uuid4)
     voter: Link[UserModel] # Reference to the ID of the user who voted
     candidate: Link[CandidateModel] # Reference to the ID of the candidate being voted for
     election: Link[ElectionModel] # Reference to the ID of the election

@@ -9,7 +9,7 @@ class ElectionModel(Document):
     description: str
     start_date: Optional[dt.datetime] = None
     end_date: Optional[dt.datetime] = None
-    candidates: Optional[Link["CandidateModel"]] = None
+    candidates: Optional[List[Link["CandidateModel"]]] = None
 
 
     def __repr__(self) -> str:
