@@ -88,6 +88,15 @@ class ElectionService:
 
 
     @staticmethod
+    async def delete_election(id: str) -> None:
+        object_id = ObjectId(id)
+        election = await ElectionModel.find_one(ElectionModel.id == object_id)
+        if not election:
+            raise HTTPException(status_code=404, detail="Election not found")
+        await election.delete()
+
+
+    @staticmethod
     async def add_candidate_to_election(id: str, candidate_id: UUID) -> ElectionModel:
         try:
             election = await ElectionModel.find_one(ElectionModel.id == id)
@@ -129,12 +138,4 @@ class ElectionService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=str(e)
             )
-
-
-    @staticmethod
-    async def delete_election(id: str) -> None:
-        election = await ElectionModel.find_one(ElectionModel.id == id)
-        if not election:
-            raise HTTPException(status_code=404, detail="Election not found")
-        await election.delete()
 

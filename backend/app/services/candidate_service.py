@@ -84,6 +84,15 @@ class CandidateService:
 
 
     @staticmethod
+    async def delete_candidate(id: str) -> None:
+        object_id = ObjectId(id)
+        candidate = await CandidateModel.find_one(CandidateModel.id == object_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        await candidate.delete()
+
+
+    @staticmethod
     async def add_election_to_candidate(candidate_id: UUID, election_id: UUID) -> CandidateModel:
         try:
             candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
@@ -128,13 +137,4 @@ class CandidateService:
             bio=candidate.bio,
             election_id=candidate.elections
         )
-
-
-
-    @staticmethod
-    async def delete_candidate(candidate_id: UUID) -> None:
-        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidate not found")
-        await candidate.delete()
 
