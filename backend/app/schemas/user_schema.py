@@ -23,3 +23,12 @@ class UserOut(BaseModel):
     last_name: Optional[str]
     disabled: Optional[bool] = False
 
+
+class UserOutVote(BaseModel):
+    user_id: UUID
+    dni: int
+    email: EmailStr
+    first_name: Optional[str]
+    last_name: Optional[str]
+
+    

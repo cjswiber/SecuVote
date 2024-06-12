@@ -3,7 +3,6 @@ from beanie import Document, Indexed, Link
 
 
 class CandidateModel(Document):
-    # candidate_id: UUID = Field(default_factory=uuid4)
     name: str
     party: str
     bio: Optional[str] = None

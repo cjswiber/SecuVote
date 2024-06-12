@@ -24,3 +24,9 @@ class ElectionOut(BaseModel):
     start_date: dt.datetime
     end_date: dt.datetime
 
+
+class ElectionOutVote(BaseModel):
+    id: str
+    name: str
+    description: str
+

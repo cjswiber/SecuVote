@@ -22,3 +22,9 @@ class CandidateUpdate(BaseModel):
     party: Optional[str] = None
     bio: Optional[str] = None
 
+
+class CandidateOutVote(BaseModel):
+    id: str
+    name: str
+    party: str
+

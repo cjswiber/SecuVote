@@ -4,7 +4,6 @@ from typing import Optional, List
 
 
 class ElectionModel(Document):
-    # election_id: UUID = Field(default_factory=uuid4)
     name: str
     description: str
     start_date: Optional[dt.datetime] = None

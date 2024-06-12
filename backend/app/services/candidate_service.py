@@ -105,11 +105,11 @@ class CandidateService:
             if not election:
                 raise HTTPException(status_code=404, detail="Election not found")
 
-            # Inicializar la lista de elecciones si no existe
+            # Create an empty list if it does not exist
             if not candidate.elections:
                 candidate.elections = []
 
-            # Verificar si la elección ya está en la lista de elecciones
+            # Check if the election is already in the list of elections
             if all(link.ref.id != election.id for link in candidate.elections):
                 candidate.elections.append(election)
             else:
@@ -143,11 +143,11 @@ class CandidateService:
             if not election:
                 raise HTTPException(status_code=404, detail="Election not found")
             
-            # Verificar si la elección está en la lista de elecciones
+            # Check if the election is in the list of elections
             if not any(link.ref.id == election.id for link in candidate.elections):
                 raise HTTPException(status_code=404, detail="Election does not belong to the candidate")
 
-            # Verificar si la elección está en la lista de elecciones y eliminarla
+            # Remove the election from the list
             candidate.elections = [link for link in candidate.elections if link.ref.id != election.id]
 
             await candidate.save()
