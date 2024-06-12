@@ -54,10 +54,10 @@ async def delete_election(id: str):
         )
 
 
-@election_router.post("/add-candidate-in-election/{id}/{candidate_id}", summary="Add Candidate to Election", response_model=ElectionOut)
-async def add_candidate_to_election(id: str, candidate_id: UUID):
+@election_router.post("/add-candidate-to-election/{election_id}/{candidate_id}", summary="Add Candidate to Election", response_model=ElectionOut)
+async def add_candidate_to_election(election_id: str, candidate_id: str):
     try:
-        return await ElectionService.add_candidate_to_election(id, candidate_id)
+        return await ElectionService.add_candidate_to_election(election_id, candidate_id)
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -67,10 +67,10 @@ async def add_candidate_to_election(id: str, candidate_id: UUID):
         )
 
 
-@election_router.delete("/remove-candidate-in-election/{id}/{candidate_id}", summary="Remove Candidate from Election")
-async def remove_candidate_from_election(id: str, candidate_id: UUID):
+@election_router.delete("/remove-candidate-from-election/{election_id}/{candidate_id}", summary="Remove Candidate from Election")
+async def remove_candidate_from_election(election_id: str, candidate_id: str):
     try:
-        await ElectionService.remove_candidate_from_election(id, candidate_id)
+        await ElectionService.remove_candidate_from_election(election_id, candidate_id)
         return {"detail": "Candidate removed from election successfully"}
     except HTTPException as e:
         raise e
