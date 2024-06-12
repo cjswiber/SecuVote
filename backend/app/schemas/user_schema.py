@@ -31,4 +31,3 @@ class UserOutVote(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
 
-    

@@ -11,6 +11,6 @@ class VoteUpdate(BaseModel):
 
 
 class VoteOut(BaseModel):
-    id: str
+    user_id: str
     timestamp: dt.datetime
 

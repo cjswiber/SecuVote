@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.models.user_model import UserModel
 from app.models.election_model import ElectionModel
 from app.models.candidate_model import CandidateModel
+from app.models.vote_model import VoteModel
 from app.api.api_v1.router import router
 
 
@@ -27,7 +28,8 @@ async def lifespan(app: FastAPI):
         document_models = [
             UserModel,
             ElectionModel,
-            CandidateModel
+            CandidateModel,
+            VoteModel
         ]
     )
     print("Connected to MongoDB successfully.")
