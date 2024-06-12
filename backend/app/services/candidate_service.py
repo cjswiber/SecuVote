@@ -4,7 +4,6 @@ from app.models.election_model import ElectionModel
 from fastapi import HTTPException, status
 from typing import Optional
 from uuid import UUID
-from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 from beanie import Link
 import json
@@ -21,11 +20,10 @@ class CandidateService:
         try:
             await candidate.insert()
             return CandidateModel(
-                candidate_id=candidate.candidate_id,
+                id=str(candidate.id),
                 name=candidate.name,
                 party=candidate.party,
                 bio=candidate.bio,
-                election_id=[]
             )
         except DuplicateKeyError:
             raise HTTPException(

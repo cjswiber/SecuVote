@@ -5,7 +5,7 @@ from pydantic import Field
 
 
 class CandidateModel(Document):
-    candidate_id: UUID = Field(default_factory=uuid4)
+    # candidate_id: UUID = Field(default_factory=uuid4)
     name: str
     party: str
     bio: Optional[str] = None
@@ -13,11 +13,6 @@ class CandidateModel(Document):
 
     def __repr__(self) -> str:
         return f"<Candidate {self.name}>"
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, CandidateModel):
-            return self.candidate_id == other.candidate_id
-        return False
 
 
     class Settings:

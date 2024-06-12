@@ -19,7 +19,7 @@ class ElectionUpdate(BaseModel):
 
 
 class ElectionOut(BaseModel):
-    election_id: UUID
+    id: str
     name: str
     description: str
     start_date: dt.datetime

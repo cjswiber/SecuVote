@@ -20,9 +20,9 @@ async def create_candidate(data: CandidateCreate):
         )
 
 
-@candidate_router.get("/{candidate_id}", summary="Get candidate details", response_model=CandidateOut)
-async def get_candidate(candidate_id: UUID):
-    candidate = await CandidateService.get_candidate_by_id(candidate_id)
+@candidate_router.get("/{id}", summary="Get candidate details", response_model=CandidateOut)
+async def get_candidate(id: str):
+    candidate = await CandidateService.get_candidate_by_id(id)
     if not candidate:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
