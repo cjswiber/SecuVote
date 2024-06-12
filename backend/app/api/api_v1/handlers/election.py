@@ -20,7 +20,7 @@ async def create_election(data: ElectionCreate):
         )
 
 
-@election_router.get("/{id}", summary="Get election details", response_model=ElectionOut)
+@election_router.get("/election/{id}", summary="Get election details", response_model=ElectionOut)
 async def get_election(id: str):
     election = await ElectionService.get_election_by_id(id)
     if not election:
@@ -31,7 +31,7 @@ async def get_election(id: str):
     return election
 
 
-@election_router.post("/update/{id}", summary="Update Election", response_model=ElectionOut)
+@election_router.post("/update-election/{id}", summary="Update Election", response_model=ElectionOut)
 async def update_election(id: str, data: ElectionUpdate):
     try:
         return await ElectionService.update_election(id, data)
@@ -42,7 +42,7 @@ async def update_election(id: str, data: ElectionUpdate):
         )
 
 
-@election_router.delete("/delete/{id}", summary="Delete Election")
+@election_router.delete("/delete-election/{id}", summary="Delete Election")
 async def delete_election(id: str):
     try:
         await ElectionService.delete_election(id)

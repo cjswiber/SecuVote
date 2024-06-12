@@ -20,7 +20,7 @@ class CandidateService:
         )
         try:
             await candidate.insert()
-            candidate_out = CandidateModel(
+            candidate_out = CandidateOut(
                 id=str(candidate.id),
                 name=candidate.name,
                 party=candidate.party,
@@ -60,21 +60,22 @@ class CandidateService:
 
 
     @staticmethod
-    async def update_candidate(candidate_id: UUID, data: CandidateUpdate) -> CandidateOut:
-        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+    async def update_candidate(id: str, data: CandidateUpdate) -> CandidateOut:
+        object_id = ObjectId(id)
+        candidate = await CandidateModel.find_one(CandidateModel.id == object_id)
         if not candidate:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Candidate not found"
             )
 
-        update_data = json.loads(data.json(exclude_unset=True))
+        update_data = data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(candidate, key, value)
         await candidate.save()
 
         return CandidateOut(
-            candidate_id=candidate.candidate_id,
+            id=str(candidate.id),
             name=candidate.name,
             party=candidate.party,
             bio=candidate.bio,

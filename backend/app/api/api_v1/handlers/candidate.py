@@ -9,7 +9,7 @@ from uuid import UUID
 candidate_router = APIRouter()
 
 
-@candidate_router.post("/create", summary="Create a new candidate", response_model=CandidateOut)
+@candidate_router.post("/create-candidate", summary="Create a new candidate", response_model=CandidateOut)
 async def create_candidate(data: CandidateCreate):
     try:
         return await CandidateService.create_candidate(data)
@@ -20,7 +20,7 @@ async def create_candidate(data: CandidateCreate):
         )
 
 
-@candidate_router.get("/{id}", summary="Get candidate details", response_model=CandidateOut)
+@candidate_router.get("/candidate/{id}", summary="Get candidate details", response_model=CandidateOut)
 async def get_candidate(id: str):
     candidate = await CandidateService.get_candidate_by_id(id)
     if not candidate:
@@ -31,10 +31,10 @@ async def get_candidate(id: str):
     return candidate
 
 
-@candidate_router.post("/update/{candidate_id}", summary="Update Candidate", response_model=CandidateOut)
-async def update_candidate(candidate_id: UUID, data: CandidateUpdate):
+@candidate_router.post("/update-candidate/{id}", summary="Update Candidate", response_model=CandidateOut)
+async def update_candidate(id: str, data: CandidateUpdate):
     try:
-        return await CandidateService.update_candidate(candidate_id, data)
+        return await CandidateService.update_candidate(id, data)
     except errors.OperationFailure:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -42,10 +42,10 @@ async def update_candidate(candidate_id: UUID, data: CandidateUpdate):
         )
 
 
-@candidate_router.delete("/delete/{candidate_id}", summary="Delete Candidate")
-async def delete_candidate(candidate_id: UUID):
+@candidate_router.delete("/delete-candidate/{id}", summary="Delete Candidate")
+async def delete_candidate(id: str):
     try:
-        await CandidateService.delete_candidate(candidate_id)
+        await CandidateService.delete_candidate(id)
         return {"detail": "Candidate deleted successfully"}
     except errors.OperationFailure:
         raise HTTPException(

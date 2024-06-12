@@ -64,14 +64,15 @@ class ElectionService:
 
     @staticmethod
     async def update_election(id: str, data: ElectionUpdate) -> ElectionOut:
-        election = await ElectionModel.find_one(ElectionModel.id == id)
+        object_id = ObjectId(id)
+        election = await ElectionModel.find_one(ElectionModel.id == object_id)
         if not election:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Election not found"
             )
 
-        update_data = json.loads(data.model_dump(exclude_unset=True))
+        update_data = data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(election, key, value)
         await election.save()
