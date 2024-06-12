@@ -93,20 +93,22 @@ class CandidateService:
 
 
     @staticmethod
-    async def add_election_to_candidate(candidate_id: UUID, election_id: UUID) -> CandidateModel:
+    async def add_election_to_candidate(candidate_id: str, election_id: str) -> CandidateOut:
         try:
-            candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
+            object_id = ObjectId(candidate_id)
+            candidate = await CandidateModel.find_one(CandidateModel.id == object_id)
             if not candidate:
                 raise HTTPException(status_code=404, detail="Candidate not found")
 
-            election = await ElectionModel.find_one(ElectionModel.election_id == election_id)
+            object_id = ObjectId(election_id)            
+            election = await ElectionModel.find_one(ElectionModel.id == object_id)
             if not election:
                 raise HTTPException(status_code=404, detail="Election not found")
 
             if not hasattr(candidate, 'elections') or candidate.elections is None:
-                candidate.elections = [election]
+                candidate.elections = [str(election.id)]
             else:
-                candidate.elections = candidate.elections + [election] 
+                candidate.elections = candidate.elections + [str(election.id)] 
 
             await candidate.save()
             return candidate
@@ -117,6 +119,7 @@ class CandidateService:
                 detail=str(e)
             )
     
+
     @staticmethod
     async def remove_election_from_candidate(candidate_id: UUID, election_id: UUID):
         candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)

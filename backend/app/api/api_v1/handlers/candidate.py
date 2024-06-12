@@ -54,7 +54,7 @@ async def delete_candidate(id: str):
         )
 
 @candidate_router.post("/add-election-to-candidate/{candidate_id}/{election_id}", summary="Add Election to Candidate", response_model=CandidateOut)
-async def add_election_to_candidate(candidate_id: UUID, election_id: UUID):
+async def add_election_to_candidate(candidate_id: str, election_id: str):
     try:
         return await CandidateService.add_election_to_candidate(candidate_id, election_id)
     except HTTPException as e:
@@ -70,7 +70,7 @@ async def add_election_to_candidate(candidate_id: UUID, election_id: UUID):
 
 
 @candidate_router.delete("/remove-election-from-candidate/{candidate_id}/{election_id}", summary="Remove Election from Candidate", response_model=CandidateOut)
-async def remove_election_from_candidate(candidate_id: UUID, election_id: UUID):
+async def remove_election_from_candidate(candidate_id: str, election_id: str):
     try:
         return await CandidateService.remove_election_from_candidate(candidate_id, election_id)
     except HTTPException as e:
