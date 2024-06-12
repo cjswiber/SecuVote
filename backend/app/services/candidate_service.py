@@ -105,16 +105,24 @@ class CandidateService:
             if not election:
                 raise HTTPException(status_code=404, detail="Election not found")
 
-            if not hasattr(candidate, 'elections') or candidate.elections is None and candidate.elections.id != election_id:
-                election.id = str(election.id)
-                candidate.elections = [election]
-            else:
-                election.id = str(election.id)
+            # Inicializar la lista de elecciones si no existe
+            if not candidate.elections:
+                candidate.elections = []
+
+            # Verificar si la elección ya está en la lista de elecciones
+            if all(link.ref.id != election.id for link in candidate.elections):
                 candidate.elections.append(election)
+            else:
+                raise HTTPException(status_code=400, detail="Election already exists in the candidate's list")
 
             await candidate.save()
+            candidate.id = str(candidate.id)
             return candidate
 
+        except HTTPException as http_exc:
+            # Re-raise HTTPException to avoid capturing it as a 500 error
+            raise http_exc
+        
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -123,23 +131,36 @@ class CandidateService:
     
 
     @staticmethod
-    async def remove_election_from_candidate(candidate_id: UUID, election_id: UUID):
-        candidate = await CandidateModel.find_one(CandidateModel.candidate_id == candidate_id)
-        if not candidate:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Candidate not found"
-            )
+    async def remove_election_from_candidate(candidate_id: str, election_id: str) -> CandidateOut:
+        try:
+            object_id = ObjectId(candidate_id)
+            candidate = await CandidateModel.find_one(CandidateModel.id == object_id)
+            if not candidate:
+                raise HTTPException(status_code=404, detail="Candidate not found")
 
-        if candidate.elections and candidate.elections.id == election_id:
-            candidate.elections = None
+            object_id = ObjectId(election_id)
+            election = await ElectionModel.find_one(ElectionModel.id == object_id)
+            if not election:
+                raise HTTPException(status_code=404, detail="Election not found")
+            
+            # Verificar si la elección está en la lista de elecciones
+            if not any(link.ref.id == election.id for link in candidate.elections):
+                raise HTTPException(status_code=404, detail="Election does not belong to the candidate")
+
+            # Verificar si la elección está en la lista de elecciones y eliminarla
+            candidate.elections = [link for link in candidate.elections if link.ref.id != election.id]
+
             await candidate.save()
+            candidate.id = str(candidate.id)
+            return candidate
+        
+        except HTTPException as http_exc:
+            # Re-raise HTTPException to avoid capturing it as a 500 error
+            raise http_exc
 
-        return CandidateOut(
-            candidate_id=candidate.candidate_id,
-            name=candidate.name,
-            party=candidate.party,
-            bio=candidate.bio,
-            election_id=candidate.elections
-        )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(e)
+            )
 
