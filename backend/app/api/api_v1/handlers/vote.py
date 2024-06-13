@@ -10,9 +10,9 @@ vote_router = APIRouter()
 
 
 @vote_router.post("/create-vote", summary="Create a new vote", response_model=VoteOut)
-async def create_vote(user_id: str, candidate_id: str, election_id: str):
+async def create_vote(dni: int, candidate_id: str, election_id: str):
     try:
-        return await VoteService.create_vote(user_id, candidate_id, election_id)
+        return await VoteService.create_vote(dni, candidate_id, election_id)
     except errors.DuplicateKeyError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

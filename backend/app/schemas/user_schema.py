@@ -25,9 +25,10 @@ class UserOut(BaseModel):
 
 
 class UserOutVote(BaseModel):
-    user_id: UUID
+    # user_id: str
     dni: int
     email: EmailStr
     first_name: Optional[str]
     last_name: Optional[str]
+    disabled: Optional[bool] = False
 

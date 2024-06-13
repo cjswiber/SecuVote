@@ -18,10 +18,10 @@ from datetime import datetime as dt
 
 class VoteService:
     @staticmethod
-    async def create_vote(user_id: str,candidate_id: str, election_id: str) -> VoteModel:
+    async def create_vote(dni: int,candidate_id: str, election_id: str) -> VoteModel:
         try:
-            object_id = ObjectId(user_id)
-            user = await UserModel.find_one(UserModel.id == object_id)
+            # object_id = ObjectId(dni)
+            user = await UserModel.find_one(UserModel.dni == dni)
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
 
@@ -46,7 +46,7 @@ class VoteService:
 
 
             existing_vote = await VoteModel.find_one(
-                VoteModel.voter == Link[UserModel](ObjectId(user_id)) &
+                VoteModel.voter == Link[UserModel](ObjectId(dni)) &
                 VoteModel.election == Link[ElectionModel](ObjectId(election_id))
             )
 
@@ -67,7 +67,7 @@ class VoteService:
 
             # Create vote
             vote = VoteModel(
-                voter=Link[UserModel](user_id),
+                voter=Link[UserModel](dni),
                 candidate=Link[CandidateModel](candidate_id),
                 election=Link[ElectionModel](election_id),
                 timestamp=dt.now(dt.timezone.utc)
@@ -80,7 +80,7 @@ class VoteService:
 
 
 
-
+            '''
 
             if all(link.ref.id != user.id for link in user.id):
                 vote.voter.add(user)
@@ -98,7 +98,7 @@ class VoteService:
             # candidate.id = str(candidate.id)
             return candidate
 
-
+            '''
             
         except HTTPException as http_exc:
             # Re-raise HTTPException to avoid capturing it as a 500 error
