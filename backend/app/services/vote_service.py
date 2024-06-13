@@ -26,7 +26,7 @@ class VoteService:
                 raise HTTPException(status_code=404, detail="User not found")
 
             user = UserOutVote(
-                id=str(user.id),
+                id=user.id,
                 dni=user.dni,
                 email=user.email,
                 first_name=user.first_name,
@@ -39,7 +39,7 @@ class VoteService:
                 raise HTTPException(status_code=404, detail="Election not found")
             
             election = ElectionOutVote(
-                id=str(election_id),
+                id=ObjectId(election_id),
                 name=election.name,
                 description=election.description,
             )
@@ -60,7 +60,7 @@ class VoteService:
                 raise HTTPException(status_code=404, detail="Candidate not found")
 
             candidate = CandidateOutVote(
-                id=str(candidate_id),
+                id=ObjectId(candidate_id),
                 name=candidate.name,
                 party=candidate.party,
             )
