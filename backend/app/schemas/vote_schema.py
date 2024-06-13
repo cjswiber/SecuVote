@@ -1,5 +1,9 @@
-from pydantic import BaseModel
-import datetime as dt
+from pydantic import BaseModel, Field
+from beanie import Link
+from app.models.candidate_model import CandidateModel
+from app.models.election_model import ElectionModel
+from app.models.user_model import UserModel
+from datetime import datetime, UTC
 
 
 class VoteCreate(BaseModel):
@@ -11,6 +15,8 @@ class VoteUpdate(BaseModel):
 
 
 class VoteOut(BaseModel):
-    user_id: str
-    timestamp: dt.datetime
-
+    id: str
+    voter: str
+    candidate: str
+    election: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))

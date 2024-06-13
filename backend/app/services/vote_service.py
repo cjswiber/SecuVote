@@ -13,20 +13,27 @@ from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 from beanie import Link
 import json
-from datetime import datetime as dt
+from datetime import datetime as dt, UTC
 
 
 class VoteService:
     @staticmethod
-    async def create_vote(dni: int,candidate_id: str, election_id: str) -> VoteModel:
+    async def create_vote(dni: int, candidate_id: str, election_id: str) -> VoteOut:
         try:
-            # object_id = ObjectId(dni)
+            existing_vote = await VoteModel.find_one(
+                VoteModel.voter.dni == dni,
+                VoteModel.election.id == election_id
+            )
+
+            if existing_vote:
+                raise HTTPException(status_code=400, detail="User has already voted in this election")
+
             user = await UserModel.find_one(UserModel.dni == dni)
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
 
             user = UserOutVote(
-                id=user.id,
+                id=str(user.id),
                 dni=user.dni,
                 email=user.email,
                 first_name=user.first_name,
@@ -39,20 +46,10 @@ class VoteService:
                 raise HTTPException(status_code=404, detail="Election not found")
             
             election = ElectionOutVote(
-                id=ObjectId(election_id),
+                id=election_id,
                 name=election.name,
                 description=election.description,
             )
-
-
-            existing_vote = await VoteModel.find_one(
-                VoteModel.voter == Link[UserModel](ObjectId(dni)) &
-                VoteModel.election == Link[ElectionModel](ObjectId(election_id))
-            )
-
-            if existing_vote:
-                raise HTTPException(status_code=400, detail="User has already voted in this election")
-
 
             object_id = ObjectId(candidate_id)
             candidate = await CandidateModel.find_one(CandidateModel.id == object_id)
@@ -60,22 +57,30 @@ class VoteService:
                 raise HTTPException(status_code=404, detail="Candidate not found")
 
             candidate = CandidateOutVote(
-                id=ObjectId(candidate_id),
+                id=candidate_id,
                 name=candidate.name,
                 party=candidate.party,
             )
 
             # Create vote
             vote = VoteModel(
-                voter=Link[UserModel](dni),
-                candidate=Link[CandidateModel](candidate_id),
-                election=Link[ElectionModel](election_id),
-                timestamp=dt.now(dt.timezone.utc)
+                voter=user.model_dump(),
+                candidate=candidate.model_dump(),
+                election=election.model_dump(),
+                timestamp=dt.now(UTC)
             )
 
             # Guardar el voto en la base de datos
             await vote.save()
-            return vote
+
+            vote_out = VoteOut(
+                id=str(vote.id),
+                voter=str(vote.voter["id"]), 
+                candidate=str(vote.candidate["id"]), 
+                election=str(vote.election["id"]), 
+                timestamp=vote.timestamp
+            )
+            return vote_out
 
 
 
@@ -126,9 +131,9 @@ class VoteService:
 
         return VoteOut(
             id=str(vote.id),
-            voter=vote.voter,
-            candidate=vote.candidate,
-            election=vote.election,
+            voter=str(vote.voter.id), 
+            candidate=str(vote.candidate.id), 
+            election=str(vote.election.id), 
             timestamp=vote.timestamp
         )
 

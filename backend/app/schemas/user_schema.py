@@ -25,7 +25,7 @@ class UserOut(BaseModel):
 
 
 class UserOutVote(BaseModel):
-    # user_id: str
+    id: str
     dni: int
     email: EmailStr
     first_name: Optional[str]
